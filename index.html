@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurante SACP</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Raleway:wght@400;600&display=swap" rel="stylesheet">
+  
+</head>
+
+<body>
+  <header class="encabezado-sacp">
+    <img src="bienvenida.jpg" alt="Bienvenidos" class="banner-img">
+    <div class="logo-y-texto">
+      <img src="logo .jpg" alt="Logo SACP" class="logo-sacp">
+      <div class="textos-sacp">
+        <h1>Bienvenidos a SACP, un restaurante donde el sabor y la naturaleza se fusionan</h1>
+        <p class="slogan-sacp">Especialistas en cocina creativa con ingredientes frescos, flores comestibles y una presentación única.</p>
+      </div>
+    </div>
+  </header>
+
+  <div id="contador-platos">🧺 Platos en tu pedido: <span id="contador-numero">0</span></div>
+
+  <main class="contenido">
+    <section class="galeria">
+      <img src="plato 1 .jpg" alt="Plato 1" onclick="abrirModal('Sushi Armonía', 'plato 1 .jpg', ['Arroz para sushi', 'Vinagre de arroz', 'Salmón, atún', 'Alga nori, aguacate'], 150000)">
+      <img src="platp 2.jpg" alt="Plato 2" onclick="abrirModal('Ensalada Verde', 'platp 2.jpg', ['Lechuga, espinaca', 'Tomate cherry', 'Pepino, zanahoria', 'Aderezo natural'], 32000)">
+      <img src="plato 3.jpg" alt="Plato 3" onclick="abrirModal('Pasta al Pesto', 'plato 3.jpg', ['Fettuccine artesanal', 'Salsa pesto fresca', 'Queso parmesano', 'Albahaca y piñones'], 48000)">
+      <img src="plato 4.jpg" alt="Plato 4" onclick="abrirModal('Pollo Oriental', 'plato 4.jpg', ['Pechuga de pollo', 'Vegetales salteados', 'Salsa teriyaki', 'Arroz jazmín'], 42000)">
+      <img src="plato 5.jpg" alt="Plato 5" onclick="abrirModal('Tacos Botánicos', 'plato 5.jpg', ['Tortillas rojas', 'Crujiente empanizado', 'Pollo/pescado/tofu', 'Flores comestibles'], 28000)">
+      <img src="plato 6.jpg" alt="Plato 6" onclick="abrirModal('Postre de Maracuyá', 'plato 6.jpg', ['Maracuyá natural', 'Base de galleta', 'Crema batida'], 18000)">
+    </section>
+
+    <section class="formulario">
+      <h2>Realiza tu Pedido</h2>
+      <form onsubmit="enviarPedido(event)">
+        <input type="text" id="nombre" placeholder="Nombre" required>
+        <input type="tel" id="telefono" placeholder="Número de Teléfono" required>
+        <input type="text" id="direccion" placeholder="Dirección" required>
+        <input type="text" id="pago" placeholder="Método de Pago" required>
+        <button type="submit">Enviar Pedido</button>
+      </form>
+      <div id="confirmacion-plato" class="platos-seleccionados">
+        <strong>Platos seleccionados:</strong>
+        <ul id="lista-platos"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let platosSeleccionados = [];
+
+    function abrirModal(titulo, imagen, ingredientes, precio) {
+      document.getElementById('modal-title').textContent = titulo;
+      document.getElementById('modal-image').src = imagen;
+      document.getElementById('modal-ingredientes').innerHTML = ingredientes.map(i => `<li>${i}</li>`).join('');
+      document.getElementById('modal-precio').textContent = `$${precio.toLocaleString()}`;
+
+      // Guardar temporalmente
+      document.getElementById('modal-cantidad').value = 1;
+      document.getElementById('modal').style.display = 'flex';
+
+      // Asignar función al botón
+      document.getElementById('modal-pedir-btn').onclick = function () {
+        const cantidad = parseInt(document.getElementById('modal-cantidad').value);
+        agregarPlato(titulo, precio, cantidad);
+        document.getElementById('modal').style.display = 'none';
+      }
+    }
+
+    function agregarPlato(nombre, precio, cantidad) {
+      const existente = platosSeleccionados.find(p => p.nombre === nombre);
+      if (existente) {
+        existente.cantidad += cantidad;
+      } else {
+        platosSeleccionados.push({ nombre, precio, cantidad });
+      }
+      actualizarListaPlatos();
+    }
+
+    function actualizarListaPlatos() {
+      const listaUI = document.getElementById('lista-platos');
+      listaUI.innerHTML = '';
+      let totalCantidad = 0;
+
+      platosSeleccionados.forEach((plato, index) => {
+        const li = document.createElement('li');
+        li.textContent = `${plato.nombre} x${plato.cantidad}`;
+
+        const botonEliminar = document.createElement('button');
+        botonEliminar.textContent = 'Quitar';
+        botonEliminar.onclick = () => quitarPlato(index);
+
+        li.appendChild(botonEliminar);
+        listaUI.appendChild(li);
+        totalCantidad += plato.cantidad;
+      });
+
+      document.getElementById('contador-numero').textContent = totalCantidad;
+    }
+
+    function quitarPlato(index) {
+      platosSeleccionados.splice(index, 1);
+      actualizarListaPlatos();
+    }
+
+    function enviarPedido(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('nombre').value;
+      const telefono = document.getElementById('telefono').value;
+      const direccion = document.getElementById('direccion').value;
+      const pago = document.getElementById('pago').value;
+
+      const platos = platosSeleccionados.map(p => `${p.nombre} x${p.cantidad}`).join(', ');
+      const total = platosSeleccionados.reduce((sum, p) => sum + p.precio * p.cantidad, 0);
+
+      const mensaje = `Hola, soy ${nombre}. Quiero pedir:\n🍽️ ${platos}\n📞 Tel: ${telefono}\n📍 Dirección: ${direccion}\n💳 Pago: ${pago}\n💰 Total: $${total.toLocaleString()}`;
+      const numeroWhatsApp = "573174927295";
+      const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
+      window.open(url, '_blank');
+    }
+  </script>
+
+  <div id="modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModal()">&times;</span>
+      <div class="modal-body">
+        <div class="modal-texto">
+          <h2 id="modal-title"></h2>
+          <h3>Ingredientes</h3>
+          <ul id="modal-ingredientes"></ul>
+          <p id="modal-precio" style="margin-top: 1rem; font-weight: bold;"></p>
+          <div class="modal-actions">
+            <input type="number" id="modal-cantidad" value="1" min="1" style="width: 60px; margin-right: 1rem;">
+            <button id="modal-pedir-btn">Pedir</button>
+          </div>
+        </div>
+        <div class="modal-img">
+          <img id="modal-image" src="" alt="">
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
